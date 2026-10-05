@@ -1,74 +1,112 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useMemo, useState } from 'react';
+import { Clock3, MapPin, ShoppingBag, SlidersHorizontal, Tag, X } from 'lucide-react';
 
-const deals = [
-  { id: 'sourdough-loaf-pack', name: 'Sourdough Loaf Pack', fullName: 'Sourdough Loaf Pack (3 loaves)', store: 'Green Earth Bakery', distance: '1.2 km away', price: 40, originalPrice: 120, pickup: 'Pickup 6–8 PM', pickupWindow: 'Today, 6:00 PM – 8:00 PM', expires: 'Expires today, 11:59 PM', address: '12 MG Road, Bengaluru', category: 'Bakery' },
-  { id: 'mixed-veg-box', name: 'Mixed Veg Box', fullName: 'Mixed Veg Box', store: 'FreshMart', distance: '0.8 km away', price: 60, originalPrice: 200, pickup: 'Pickup 5–7 PM', pickupWindow: 'Today, 5:00 PM – 7:00 PM', expires: 'Expires today, 11:59 PM', address: '45 Brigade Road, Bengaluru', category: 'Produce' },
-  { id: 'dairy-combo', name: 'Dairy Combo (Milk+Curd)', fullName: 'Dairy Combo (Milk + Curd)', store: 'City Grocers', distance: '2.1 km away', price: 35, originalPrice: 90, pickup: 'Pickup 7–9 PM', pickupWindow: 'Today, 7:00 PM – 9:00 PM', expires: 'Expires today, 11:59 PM', address: '8 Residency Road, Bengaluru', category: 'Dairy' },
-  { id: 'croissant-pack', name: 'Croissant Pack (4)', fullName: 'Croissant Pack (4 croissants)', store: 'Green Earth Bakery', distance: '1.2 km away', price: 50, originalPrice: 160, pickup: 'Pickup 6–8 PM', pickupWindow: 'Today, 6:00 PM – 8:00 PM', expires: 'Expires today, 11:59 PM', address: '12 MG Road, Bengaluru', category: 'Bakery' },
-  { id: 'fruit-basket', name: 'Seasonal Fruit Basket', fullName: 'Seasonal Fruit Basket (2 kg)', store: 'FreshMart', distance: '0.8 km away', price: 70, originalPrice: 220, pickup: 'Pickup 5–7 PM', pickupWindow: 'Today, 5:00 PM – 7:00 PM', expires: 'Expires today, 11:59 PM', address: '45 Brigade Road, Bengaluru', category: 'Produce' },
-  { id: 'paneer-block', name: 'Paneer Block (200g)', fullName: 'Paneer Block (200g)', store: 'City Grocers', distance: '2.1 km away', price: 45, originalPrice: 110, pickup: 'Pickup 7–9 PM', pickupWindow: 'Today, 7:00 PM – 9:00 PM', expires: 'Expires today, 11:59 PM', address: '8 Residency Road, Bengaluru', category: 'Dairy' },
-  { id: 'muffin-box', name: 'Muffin Box (6)', fullName: 'Muffin Box (6 muffins)', store: 'Sunrise Bakes', distance: '1.6 km away', price: 55, originalPrice: 180, pickup: 'Pickup 6–8 PM', pickupWindow: 'Today, 6:00 PM – 8:00 PM', expires: 'Expires today, 11:59 PM', address: '3 Church Street, Bengaluru', category: 'Bakery' },
-  { id: 'veg-thali-pack', name: 'Veg Thali Pack', fullName: 'Veg Thali Pack (2 meals)', store: 'Annapurna Kitchen', distance: '1.9 km away', price: 65, originalPrice: 180, pickup: 'Pickup 8–9 PM', pickupWindow: 'Today, 8:00 PM – 9:00 PM', expires: 'Expires today, 11:59 PM', address: '21 Infantry Road, Bengaluru', category: 'Meals' },
+const categories = ['All', 'Bakery', 'Vegetables', 'Fruits'];
+
+const listings = [
+  { category: 'Bakery', title: 'Organic Sourdough Loaves', vendor: 'Hearth & Grain Bakery', distance: '0.8 km', quantity: '12 loaves available', price: 'Rs. 35', original: 'Rs. 120', savings: '70%', time: '14h left', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=85' },
+  { category: 'Vegetables', title: 'Heirloom Tomato Crates', vendor: 'Sunridge Farms', distance: '1.2 km', quantity: '3 crates available', price: 'Rs. 85', original: 'Rs. 290', savings: '70%', time: '8h left', image: 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=900&q=85' },
+  { category: 'Fruits', title: 'Fresh Berry Medley Packs', vendor: 'Berrybrook Orchards', distance: '2.1 km', quantity: '24 packs available', price: 'Rs. 60', original: 'Rs. 190', savings: '70%', time: '6h left', image: 'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&w=900&q=85' },
+  { category: 'Vegetables', title: 'Rainbow Bell Pepper Bushels', vendor: 'Green Valley Co-op', distance: '1.5 km', quantity: '8 bushels available', price: 'Rs. 70', original: 'Rs. 240', savings: '70%', time: '20h left', image: 'https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?auto=format&fit=crop&w=900&q=85' },
+  { category: 'Bakery', title: 'Cinnamon Morning Buns', vendor: 'The Daily Crumb', distance: '2.7 km', quantity: '18 buns available', price: 'Rs. 50', original: 'Rs. 145', savings: '64%', time: '11h left', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=85' },
+  { category: 'Fruits', title: 'Seasonal Orchard Box', vendor: 'Meadowlane Growers', distance: '3.4 km', quantity: '10 boxes available', price: 'Rs. 110', original: 'Rs. 310', savings: '65%', time: '17h left', image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=900&q=85' },
 ];
 
-const stores = [...new Set(deals.map((d) => d.store))];
-
-function DealCard({ deal }) {
+function ListingCard({ listing, onSelect }) {
   return (
-    <article className="card">
-      <div className="card-image" />
-      <span className="badge">Expires today</span>
-      <h2>{deal.name}</h2>
-      <p>{deal.store}</p>
-      <p>
-        <span className="price">Rs. {deal.price}</span>{" "}
-        <span className="original-price">Rs. {deal.originalPrice}</span>
-      </p>
-      <p>{deal.pickup}</p>
-      <Link className="btn" to={`/deals/${deal.id}`}>
-        Claim item
-      </Link>
+    <article
+      className="listing-card"
+      role="button"
+      tabIndex={0}
+      onClick={() => onSelect(listing)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(listing); } }}
+      aria-label={`View details for ${listing.title}`}
+    >
+      <div className="listing-image-wrap">
+        <img src={listing.image} alt={listing.title} className="listing-image" />
+        <span className="category-pill">{listing.category}</span>
+        <span className="save-badge">SAVE<strong>{listing.savings}</strong></span>
+        <span className="time-badge"><Clock3 size={16} /> {listing.time}</span>
+      </div>
+      <div className="listing-content">
+        <h2>{listing.title}</h2>
+        <p className="meta-line"><MapPin size={17} /> {listing.vendor} <span>·</span> {listing.distance}</p>
+        <p className="meta-line quantity-line"><Tag size={17} /> {listing.quantity}</p>
+        <div className="listing-footer">
+          <div className="price"><strong>{listing.price}</strong><del>{listing.original}</del></div>
+          <button className="reserve-button" type="button" onClick={(e) => { e.stopPropagation(); alert(`Reserved: ${listing.title}`); }}>
+            <ShoppingBag size={17} /> Reserve
+          </button>
+        </div>
+      </div>
     </article>
   );
 }
 
 function BrowsePage() {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("");
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [selectedListing, setSelectedListing] = useState(null);
 
-  const q = query.trim().toLowerCase();
-  const filtered = deals.filter((deal) => {
-    const matchesQuery =
-      !q ||
-      deal.name.toLowerCase().includes(q) ||
-      deal.store.toLowerCase().includes(q);
-    return matchesQuery && (!category || deal.category === category);
-  });
+  const filteredListings = useMemo(
+    () => (activeCategory === 'All' ? listings : listings.filter((l) => l.category === activeCategory)),
+    [activeCategory]
+  );
 
   return (
-    <main className="page">
-      <h1>Browse deals near you</h1>
-      <p>{filtered.length} items available today</p>
+    <main className="marketplace-shell">
+      <section id="marketplace" className="marketplace-content">
+        <div className="eyebrow">LIVE MARKETPLACE</div>
+        <div className="heading-row">
+          <div>
+            <h1>Fresh Deals Near You</h1>
+            <p className="subheading">{filteredListings.length} surplus listings available within 5km</p>
+          </div>
+          <div className="filters" aria-label="Filter listings by category">
+            <SlidersHorizontal className="filter-icon" size={23} />
+            {categories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                className={`filter-pill ${activeCategory === category ? 'active' : ''}`}
+                aria-pressed={activeCategory === category}
+                onClick={() => setActiveCategory(category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
 
-      <input
-        type="search"
-        placeholder="Search for food, bakery, store..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      <select value={category} onChange={(e) => setCategory(e.target.value)}>
-        <option value="">All categories</option>
-        <option value="Bakery">Bakery</option>
-        <option value="Produce">Produce</option>
-        <option value="Dairy">Dairy</option>
-      </select>
+        <div className="listings-grid">
+          {filteredListings.map((listing) => (
+            <ListingCard key={listing.title} listing={listing} onSelect={setSelectedListing} />
+          ))}
+        </div>
+      </section>
 
-      <div className="grid">
-        {filtered.map((deal) => (
-          <DealCard key={deal.id} deal={deal} />
-        ))}
-      </div>
+      {selectedListing && (
+        <div className="details-backdrop" role="presentation" onClick={() => setSelectedListing(null)}>
+          <section className="details-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <button className="close-details" type="button" onClick={() => setSelectedListing(null)} aria-label="Close details">
+              <X />
+            </button>
+            <img src={selectedListing.image} alt="" className="details-image" />
+            <div className="details-body">
+              <span className="details-category">{selectedListing.category}</span>
+              <h2>{selectedListing.title}</h2>
+              <p className="details-vendor"><MapPin size={18} /> {selectedListing.vendor} · {selectedListing.distance}</p>
+              <p className="details-description">Rescued surplus from a local vendor. Fresh, carefully packed, and ready for pickup today.</p>
+              <div className="details-facts"><span><Tag size={17} /> {selectedListing.quantity}</span><span><Clock3 size={17} /> {selectedListing.time}</span></div>
+              <div className="details-footer">
+                <div className="price"><strong>{selectedListing.price}</strong><del>{selectedListing.original}</del></div>
+                <button className="reserve-button" type="button" onClick={() => alert(`Reserved: ${selectedListing.title}`)}>
+                  <ShoppingBag size={17} /> Reserve
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
