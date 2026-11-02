@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+:root { color-scheme: dark; }
+
+@layer base {
+  * { @apply border-white/10 outline-[#e8741a]/50; }
+  html { background: #1c1a14; }
+  body { @apply bg-[#1c1a14] text-[#e4e8d4]; font-family: 'Inter', sans-serif; }
+  button, input { font: inherit; }
+}
